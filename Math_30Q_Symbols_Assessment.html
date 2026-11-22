@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math 30-Question Assessment (Symbols Edition)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: #F8FAFC; }
+        h1, h2, h3, .font-heading { font-family: 'Chakra Petch', sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 select-none">
+
+    <!-- STICKY TOP BAR -->
+    <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur-md border-b border-cyan-500/30 px-4 py-3 shadow-lg">
+        <div class="max-w-3xl mx-auto flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2.5">
+                <div class="bg-gradient-to-tr from-cyan-400 to-blue-500 p-2 rounded-xl text-slate-950 font-bold">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white uppercase leading-none">
+                        Math Assessment (30 Qs)
+                    </h1>
+                    <p class="text-[11px] text-cyan-400 mt-0.5">Order of Operations (+, −, ×, ÷, Exponents)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <div class="bg-slate-800 border border-amber-400/40 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-star"></i>
+                    <span id="live-score">0</span>/<span id="live-answered">0</span>
+                </div>
+                <button onclick="resetMathTest()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden sm:inline">Reset</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-3xl w-full mx-auto p-4 pb-24 space-y-4">
+        <div class="bg-slate-900 border border-cyan-500/30 rounded-2xl p-4">
+            <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                Mathematics Only • Symbols Format
+            </span>
+            <h2 class="text-lg sm:text-xl font-bold text-white mt-1.5">
+                Order of Operations Mastery Test
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">
+                Tap an answer choice for each problem to check your work with step-by-step math symbols.
+            </p>
+        </div>
+
+        <div id="questions-list" class="space-y-4"></div>
+
+        <div class="bg-gradient-to-r from-slate-900 to-slate-800 border border-cyan-500/40 rounded-2xl p-5 text-center space-y-2 mt-6">
+            <h3 class="text-lg font-bold text-white">Math Score Summary</h3>
+            <p class="text-xs text-slate-300">
+                Answered: <strong id="summary-answered" class="text-cyan-400">0</strong> / <strong class="text-white">30</strong> &nbsp;|&nbsp;
+                Score: <strong id="summary-correct" class="text-emerald-400">0</strong> / <strong class="text-white">30</strong>
+            </p>
+        </div>
+    </main>
+
+    <script>
+        const mathQuestions = [
+            { q: "Evaluate $14 + 6 \times 3$.", options: ["$60$", "$32$", "$23$", "$42$"], correct: 1, exp: "$6 \times 3 = 18 \rightarrow 14 + 18 = 32$." },
+            { q: "Calculate $(18 - 6) \div 3$.", options: ["$16$", "$2$", "$4$", "$6$"], correct: 2, exp: "$(18 - 6) = 12 \rightarrow 12 \div 3 = 4$." },
+            { q: "Simplify $24 \div 6 \times 2$.", options: ["$2$", "$8$", "$6$", "$12$"], correct: 1, exp: "$24 \div 6 = 4 \rightarrow 4 \times 2 = 8$." },
+            { q: "Evaluate $5^2 + 4 \times 3$.", options: ["$37$", "$22$", "$87$", "$63$"], correct: 0, exp: "$5^2 = 25$, $4 \times 3 = 12 \rightarrow 25 + 12 = 37$." },
+            { q: "Evaluate $30 - 12 \div 3 + 5$.", options: ["$11$", "$21$", "$31$", "$1$"], correct: 2, exp: "$12 \div 3 = 4 \rightarrow 30 - 4 = 26 \rightarrow 26 + 5 = 31$." },
+            { q: "Evaluate $(3 + 5)^2 \div 8$.", options: ["$8$", "$2$", "$4$", "$64$"], correct: 0, exp: "$(3 + 5) = 8 \rightarrow 8^2 = 64 \rightarrow 64 \div 8 = 8$." },
+            { q: "Compute $40 - 3 \times (2 + 4)^2$.", options: ["$1332$", "$-68$", "$4$", "$-104$"], correct: 1, exp: "$(2 + 4) = 6 \rightarrow 6^2 = 36 \rightarrow 3 \times 36 = 108 \rightarrow 40 - 108 = -68$." },
+            { q: "Simplify $(16 \div 4) + (3 \times 7)$.", options: ["$25$", "$49$", "$28$", "$19$"], correct: 0, exp: "$16 \div 4 = 4$, $3 \times 7 = 21 \rightarrow 4 + 21 = 25$." },
+            { q: "Evaluate $\frac{18 + 12}{9 - 3}$.", options: ["$30$", "$6$", "$5$", "$4$"], correct: 2, exp: "$18 + 12 = 30$, $9 - 3 = 6 \rightarrow 30 \div 6 = 5$." },
+            { q: "Calculate $4 \times (6 + 2^2) - 10 \div 2$.", options: ["$35$", "$15$", "$27$", "$39$"], correct: 0, exp: "$2^2 = 4 \rightarrow 6 + 4 = 10 \rightarrow 4 \times 10 = 40$, $10 \div 2 = 5 \rightarrow 40 - 5 = 35$." },
+            { q: "Evaluate $9 + 15 \div 3 \times 2$.", options: ["$19$", "$16$", "$11.5$", "$24$"], correct: 0, exp: "$15 \div 3 = 5 \rightarrow 5 \times 2 = 10 \rightarrow 9 + 10 = 19$." },
+            { q: "Evaluate $2^3 + 6 \times 4$.", options: ["$30$", "$32$", "$56$", "$48$"], correct: 1, exp: "$2^3 = 8$, $6 \times 4 = 24 \rightarrow 8 + 24 = 32$." },
+            { q: "Simplify $50 - (14 + 6) \div 4$.", options: ["$7.5$", "$45$", "$40$", "$30$"], correct: 1, exp: "$(14 + 6) = 20 \rightarrow 20 \div 4 = 5 \rightarrow 50 - 5 = 45$." },
+            { q: "Evaluate $36 \div 3^2 + 7$.", options: ["$11$", "$13$", "$19$", "$9$"], correct: 0, exp: "$3^2 = 9 \rightarrow 36 \div 9 = 4 \rightarrow 4 + 7 = 11$." },
+            { q: "Which operation comes FIRST in $10 + 2 \times (9 - 3)^2$?", options: ["$10 + 2$", "$2 \times 9$", "$9 - 3$", "$3^2$"], correct: 2, exp: "Parentheses first: $(9 - 3)$." },
+            { q: "Evaluate $10 + 2 \times (9 - 3)^2$.", options: ["$82$", "$432$", "$154$", "$22$"], correct: 0, exp: "$(9 - 3) = 6 \rightarrow 6^2 = 36 \rightarrow 2 \times 36 = 72 \rightarrow 10 + 72 = 82$." },
+            { q: "Calculate $15 - 8 + 4$.", options: ["$3$", "$11$", "$19$", "$7$"], correct: 1, exp: "$15 - 8 = 7 \rightarrow 7 + 4 = 11$." },
+            { q: "Evaluate $6 \times 5 - 18 \div 3$.", options: ["$4$", "$24$", "$12$", "$27$"], correct: 1, exp: "$6 \times 5 = 30$, $18 \div 3 = 6 \rightarrow 30 - 6 = 24$." },
+            { q: "Simplify $[20 - (3 + 4)] \times 2$.", options: ["$26$", "$42$", "$34$", "$13$"], correct: 0, exp: "$(3 + 4) = 7 \rightarrow 20 - 7 = 13 \rightarrow 13 \times 2 = 26$." },
+            { q: "Evaluate $1^4 + 2^3 + 3^2$.", options: ["$18$", "$19$", "$16$", "$21$"], correct: 0, exp: "$1^4 = 1$, $2^3 = 8$, $3^2 = 9 \rightarrow 1 + 8 + 9 = 18$." },
+            { q: "A box has $4$ packs of $6$ markers + $8$ loose markers, shared equally among $4$ students. Which expression gives each student's share?", options: ["$4 \times 6 + 8 \div 4$", "$(4 \times 6 + 8) \div 4$", "$4 \times (6 + 8) \div 4$", "$(4 + 6) \times 8 \div 4$"], correct: 1, exp: "Group total markers $(4 \times 6 + 8)$ before $\div 4$." },
+            { q: "Evaluate $(4 \times 6 + 8) \div 4$.", options: ["$26$", "$8$", "$14$", "$10$"], correct: 1, exp: "$(24 + 8) = 32 \rightarrow 32 \div 4 = 8$." },
+            { q: "Evaluate $72 \div 8 \times 3 - 5$.", options: ["$-2$", "$22$", "$18$", "$27$"], correct: 1, exp: "$72 \div 8 = 9 \rightarrow 9 \times 3 = 27 \rightarrow 27 - 5 = 22$." },
+            { q: "Simplify $6 + 2 \times (11 - 7)$.", options: ["$32$", "$14$", "$21$", "$12$"], correct: 1, exp: "$(11 - 7) = 4 \rightarrow 2 \times 4 = 8 \rightarrow 6 + 8 = 14$." },
+            { q: "Evaluate $100 - 4^2 \times 3$.", options: ["$52$", "$252$", "$76$", "$12$"], correct: 0, exp: "$4^2 = 16 \rightarrow 16 \times 3 = 48 \rightarrow 100 - 48 = 52$." },
+            { q: "Find $(25 - 5) \div 5 + 3^2$.", options: ["$13$", "$10$", "$29$", "$33$"], correct: 0, exp: "$(25 - 5) = 20$, $3^2 = 9 \rightarrow 20 \div 5 = 4 \rightarrow 4 + 9 = 13$." },
+            { q: "Evaluate $8 \times 3 - 4 \times 2$.", options: ["$40$", "$16$", "$10$", "$20$"], correct: 1, exp: "$8 \times 3 = 24$, $4 \times 2 = 8 \rightarrow 24 - 8 = 16$." },
+            { q: "Simplify $45 \div (9 - 4) \times 2$.", options: ["$4.5$", "$18$", "$1$", "$10$"], correct: 1, exp: "$(9 - 4) = 5 \rightarrow 45 \div 5 = 9 \rightarrow 9 \times 2 = 18$." },
+            { q: "Evaluate $2 + 3 \times 4^2 - 10$.", options: ["$40$", "$70$", "$136$", "$16$"], correct: 0, exp: "$4^2 = 16 \rightarrow 3 \times 16 = 48 \rightarrow 2 + 48 - 10 = 40$." },
+            { q: "Evaluate $(10 - 6)^2 + (18 \div 3) \times 2$.", options: ["$28$", "$20$", "$44$", "$19$"], correct: 0, exp: "$(10 - 6)^2 = 16$, $(18 \div 3) \times 2 = 12 \rightarrow 16 + 12 = 28$." }
+        ];
+
+        const state = { answers: {}, score: 0 };
+
+        function renderQuestions() {
+            const listEl = document.getElementById('questions-list');
+            listEl.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            mathQuestions.forEach((item, idx) => {
+                const answeredIdx = state.answers[idx];
+                const isAnswered = answeredIdx !== undefined;
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-md space-y-3";
+
+                let optionsHtml = '<div class="grid grid-cols-1 gap-2 pt-1">';
+                item.options.forEach((opt, optIdx) => {
+                    let btnClass = "w-full p-3 rounded-xl border text-left text-xs sm:text-sm font-medium transition-all flex items-center justify-between gap-2 ";
+                    let iconHtml = `<span class="w-6 h-6 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center text-[11px] font-bold shrink-0">${letters[optIdx]}</span>`;
+
+                    if (!isAnswered) {
+                        btnClass += "bg-slate-950/70 border-slate-700 hover:border-cyan-400 text-slate-200 active:scale-[0.99]";
+                    } else {
+                        if (optIdx === item.correct) {
+                            btnClass += "bg-emerald-950/50 border-emerald-500 text-emerald-200 font-semibold";
+                            iconHtml = `<span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-bold shrink-0"><i class="fa-solid fa-check"></i></span>`;
+                        } else if (optIdx === answeredIdx) {
+                            btnClass += "bg-rose-950/50 border-rose-500 text-rose-200";
+                            iconHtml = `<span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-bold shrink-0"><i class="fa-solid fa-xmark"></i></span>`;
+                        } else {
+                            btnClass += "bg-slate-950/40 border-slate-800 text-slate-500 opacity-60";
+                        }
+                    }
+
+                    optionsHtml += `
+                        <button onclick="selectAnswer(${idx}, ${optIdx})" ${isAnswered ? 'disabled' : ''} class="${btnClass}">
+                            <div class="flex items-center gap-2.5">
+                                ${iconHtml}
+                                <span>${opt}</span>
+                            </div>
+                        </button>
+                    `;
+                });
+                optionsHtml += '</div>';
+
+                let feedbackHtml = '';
+                if (isAnswered) {
+                    const gotItRight = answeredIdx === item.correct;
+                    feedbackHtml = `
+                        <div class="p-3 rounded-xl text-xs leading-relaxed ${gotItRight ? 'bg-emerald-950/40 border border-emerald-500/40 text-emerald-300' : 'bg-amber-950/40 border border-amber-500/40 text-amber-200'}">
+                            <strong>${gotItRight ? '✓ Correct:' : '→ Solution:'}</strong> ${item.exp}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-2.5">
+                        <span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 text-cyan-400 font-mono font-bold text-xs shrink-0">
+                            Q${idx + 1}
+                        </span>
+                        <p class="text-sm sm:text-base font-semibold text-white leading-snug">
+                            ${item.q}
+                        </p>
+                    </div>
+                    ${optionsHtml}
+                    ${feedbackHtml}
+                `;
+                listEl.appendChild(card);
+            });
+
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise();
+            }
+        }
+
+        function selectAnswer(qIdx, optIdx) {
+            if (state.answers[qIdx] !== undefined) return;
+            state.answers[qIdx] = optIdx;
+            if (optIdx === mathQuestions[qIdx].correct) {
+                state.score++;
+                if (state.score === 30) {
+                    confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+                }
+            }
+            renderQuestions();
+            updateStats();
+        }
+
+        function updateStats() {
+            const answeredCount = Object.keys(state.answers).length;
+            const scoreCount = state.score;
+            document.getElementById('live-score').innerText = scoreCount;
+            document.getElementById('live-answered').innerText = answeredCount;
+            document.getElementById('summary-answered').innerText = answeredCount;
+            document.getElementById('summary-correct').innerText = scoreCount;
+        }
+
+        function resetMathTest() {
+            state.answers = {};
+            state.score = 0;
+            renderQuestions();
+            updateStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = function() {
+            renderQuestions();
+            updateStats();
+        };
+    </script>
+</body>
+</html>
